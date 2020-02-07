@@ -60,12 +60,27 @@ Mrs. Robinson
 Mr. T
 '''
 
-sentence = 'Start a sentence and then bring it to an end'
 
-pattern = re.compile(r'start', re.I)
+pattern = re.compile(r'\d\d\d.\d\d\d.\d\d\d\d')
+mypattern_easting = re.compile(r'\b28\d\d\d\d\.\d\d\d\d')
+mypattern_northing = re.compile(r'\b62\d\d\d\d\d\.\d\d\d\d')
 
-matches = pattern.search(text_to_search)
+# matches = mypattern_northing.finditer(compnet_to_search_CRD)
+#
+#
+# for match in matches:
+#
+#     print(match.span())
+#     print(match.group())
 
-print(matches)
 
+try:
+    with open('data.txt', 'r') as f:
 
+        for line in f:
+
+            match = mypattern_easting.search(line)
+            print(match.group())
+
+except Exception as ex:
+    print(ex)
