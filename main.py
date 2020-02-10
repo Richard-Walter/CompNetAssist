@@ -7,6 +7,9 @@ Written by Richard Walter 2020
 """
 
 import re
+import tkFileDialog
+
+from Tkinter import *
 
 
 class FixedFile:
@@ -116,27 +119,76 @@ class CoordinateFile:
         return coordinate_dict
 
 
+class MainWindow:
+    coordinate_file_path = ""
+    fixed_file_path = ""
+
+    def __init__(self, master):
+        # self.MenuBar = Menu(master)
+
+        self.fixed_btn = Button(master, text='(1) Choose Fixed File: ', command=self.get_fixed_file_path)
+        self.coord_btn = Button(master, text='(2) Choose Coordinate File: ', command=self.get_coordinate_file_path)
+        self.update_btn = Button(master, text='(3) UPDATE FIXED FILE ', command=self.update_fixed_file)
+        self.result_lbl = Label(master, text='Test ')
+
+        self.fixed_btn.pack()
+        self.coord_btn.pack()
+        self.update_btn.pack()
+        self.result_lbl.pack()
+
+    def update_fixed_file(self):
+
+        try:
+
+            # open up fixed file & update the fixed file's easting/northings from the coordinate file
+            fixed_file = FixedFile(self.fixed_file_path)
+            coordinate_file = CoordinateFile(self.coordinate_file_path)
+            fixed_file.update(coordinate_file)
+
+        except Exception as ex:
+            print(ex, type(ex))
+            self.result_lbl.config(text='ERROR - See Richard')
+
+        else:
+            print("SUCCESS")
+            self.result_lbl.config(text='SUCCESS')
+
+    def get_fixed_file_path(self):
+        self.fixed_file_path = tkFileDialog.askopenfilename()
+        print(self.fixed_file_path)
+
+    def get_coordinate_file_path(self):
+        self.coordinate_file_path = tkFileDialog.askopenfilename()
+        print(self.coordinate_file_path)
+
+
 def main():
     # Create GUI - see GSI Query
+    root = Tk()
+    root.geometry("600x400")
+    root.title(' COMPNET ASSIST')
+    MainWindow(root)
+    root.mainloop()
 
-    # temporary file paths - replace by user chosen within GUI??
-    coordinate_file_path = 'Files\\AA9 ARTC_130120.CRD'
-    # coordinate_file_path = 'Files\\AA9 ARTC_130120.STD'
-
-    fixed_file_path = 'Files\\AA9 ARTC 030220.FIX'
-
-    try:
-
-        # open up fixed file & update the fixed file's easting/northings from the coordinate file
-        fixed_file = FixedFile(fixed_file_path)
-        coordinate_file = CoordinateFile(coordinate_file_path)
-        fixed_file.update(coordinate_file)
-
-    except Exception as ex:
-        print(ex, type(ex))
-
-    else:
-        print("SUCCESS")
+    #
+    # # temporary file paths - replace by user chosen within GUI??
+    # coordinate_file_path = 'Files\\AA9 ARTC_130120.CRD'
+    # # coordinate_file_path = 'Files\\AA9 ARTC_130120.STD'
+    #
+    # fixed_file_path = 'Files\\AA9 ARTC 030220.FIX'
+    #
+    # try:
+    #
+    #     # open up fixed file & update the fixed file's easting/northings from the coordinate file
+    #     fixed_file = FixedFile(fixed_file_path)
+    #     coordinate_file = CoordinateFile(coordinate_file_path)
+    #     fixed_file.update(coordinate_file)
+    #
+    # except Exception as ex:
+    #     print(ex, type(ex))
+    #
+    # else:
+    #     print("SUCCESS")
 
 
 if __name__ == '__main__':
