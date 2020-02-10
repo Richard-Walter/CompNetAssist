@@ -170,26 +170,6 @@ def main():
     MainWindow(root)
     root.mainloop()
 
-    #
-    # # temporary file paths - replace by user chosen within GUI??
-    # coordinate_file_path = 'Files\\AA9 ARTC_130120.CRD'
-    # # coordinate_file_path = 'Files\\AA9 ARTC_130120.STD'
-    #
-    # fixed_file_path = 'Files\\AA9 ARTC 030220.FIX'
-    #
-    # try:
-    #
-    #     # open up fixed file & update the fixed file's easting/northings from the coordinate file
-    #     fixed_file = FixedFile(fixed_file_path)
-    #     coordinate_file = CoordinateFile(coordinate_file_path)
-    #     fixed_file.update(coordinate_file)
-    #
-    # except Exception as ex:
-    #     print(ex, type(ex))
-    #
-    # else:
-    #     print("SUCCESS")
-
 
 if __name__ == '__main__':
     main()
