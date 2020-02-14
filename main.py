@@ -1,16 +1,16 @@
 """
+This program assists in survey CompNet adjustments:  It can do the following:
 
-This program assists in survey CompNet adjustments.
+1) Allow you to move coordinates automatically over to the fixed file.
+2) Compare two CRD files and look for outliers based on a specified tolerance
 
 Written by Richard Walter 2020
-
 """
 
 import tkFileDialog
 
 from Tkinter import *
 import tkMessageBox
-from collections import OrderedDict
 
 
 class FixedFile:
@@ -85,7 +85,8 @@ class FixedFile:
 class CoordinateFile:
     re_pattern_easting = re.compile(r'\b28\d{4}\.\d{4}')
     re_pattern_northing = re.compile(r'\b62\d{5}\.\d{4}')
-    re_pattern_point = re.compile(r'\b\S+\b')
+    re_pattern_point_crd = re.compile(r'\b\S+\b')
+    re_pattern_point_std = re.compile(r'"\S+"')
 
     def __init__(self, coordinate_file_path):
 
@@ -115,30 +116,46 @@ class CoordinateFile:
                 else:
                     raise Exception('CRD file Header should contain only 12 rows')
 
-            # build coordinate dictionary
-            self.build_coordinate_dictionary()
+                # build coordinate dictionary STD
+                self.build_coordinate_dictionary('CRD')
+
+            else:
+                # build coordinate dictionary CRD
+                self.build_coordinate_dictionary('STD')
 
     def get_point_coordinates(self, point):
 
         if point in self.coordinate_dictionary.keys():
             return self.coordinate_dictionary[point]
 
-    def build_coordinate_dictionary(self):
+    def build_coordinate_dictionary(self, file_type):
 
         for coordinate_contents_line in self.file_contents:
 
             point_coordinate_dict = {}
+            point_match = None
 
             try:
                 # grab easting and northing for this station
                 easting_match = self.re_pattern_easting.search(coordinate_contents_line)
                 northing_match = self.re_pattern_northing.search(coordinate_contents_line)
-                point_match = self.re_pattern_point.search(coordinate_contents_line)
+
+                if file_type == 'CRD':
+
+                    point_match = self.re_pattern_point_crd.search(coordinate_contents_line)
+
+                elif file_type == 'STD':
+
+                    point_match = self.re_pattern_point_std.search(coordinate_contents_line)
 
                 point_coordinate_dict['Eastings'] = easting_match.group()
                 point_coordinate_dict['Northings'] = northing_match.group()
 
-                self.coordinate_dictionary[point_match.group()] = point_coordinate_dict
+                point_name = point_match.group()
+                point_name = point_name.replace('"', '')
+                print(point_name)
+
+                self.coordinate_dictionary[point_name] = point_coordinate_dict
 
             except ValueError:
                 # probabaly a blank line
@@ -299,8 +316,8 @@ class MainWindow:
 def main():
     # Create GUI - see GSI Query
     root = Tk()
-    root.geometry("300x400")
-    root.title(' THE GIGOLO ')
+    root.geometry("400x400")
+    root.title(' THE GIGOLO by Richard Walter 2020')
     MainWindow(root)
     root.mainloop()
 
