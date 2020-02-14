@@ -75,8 +75,6 @@ class FixedFile:
             else:
                 self.updated_file_contents += line
 
-        print(self.updated_file_contents)
-
         # update fixed file with updated contents
         with open(self.fixed_file_path, 'w') as f_update:
             f_update.write(self.updated_file_contents)
@@ -97,7 +95,6 @@ class CoordinateFile:
             with open(coordinate_file_path, 'r') as f_orig:
 
                 self.file_contents = f_orig.readlines()
-                print(self.file_contents)
 
         except Exception as ex:
             print(ex, type(ex))
@@ -153,7 +150,6 @@ class CoordinateFile:
 
                 point_name = point_match.group()
                 point_name = point_name.replace('"', '')
-                print(point_name)
 
                 self.coordinate_dictionary[point_name] = point_coordinate_dict
 
@@ -201,6 +197,14 @@ class MainWindow:
 
         # Compare CRD Files GUI
         self.compare_crd_files_lbl = Label(master, text='\nCOMPARE CRD FILES\n')
+        self.tolE_lbl = Label(master, text='Tolerance E: ')
+        self.entry_tolE = Entry(master)
+        self.entry_tolE.insert(END, '0.05')
+
+        self.tolN_lbl = Label(master, text='Tolerance N: ')
+        self.entry_tolN = Entry(master)
+        self.entry_tolN.insert(END, '0.05')
+
         self.crd_file_1_btn = Button(master, text='(1) Choose CRD File 1: ', command=lambda: self.get_crd_file_path(1))
         self.crd_file_2_btn = Button(master, text='(2) Choose CRD File 2: ', command=lambda: self.get_crd_file_path(2))
 
@@ -208,6 +212,11 @@ class MainWindow:
         self.compare_result_lbl = Label(master, text=' ')
 
         self.compare_crd_files_lbl.pack()
+        self.tolE_lbl.pack()
+        self.entry_tolE.pack()
+        self.tolN_lbl.pack()
+        self.entry_tolN.pack()
+
         self.crd_file_1_btn.pack()
         self.crd_file_2_btn.pack()
         self.compare_crd_btn.pack()
@@ -228,15 +237,19 @@ class MainWindow:
             tkMessageBox.showerror("Error", ex)
 
         else:
-            print("SUCCESS")
+
             self.fixed_result_lbl.config(text='SUCCESS')
 
     def compare_crd_files_outliers(self):
 
+        self.outliers_dict = {}
+
         # Tolerances - let user decide in GUI???
 
-        tol_E = 0.005
-        tol_N = 0.005
+        tol_E = float(self.entry_tolE.get())
+        tol_N = float(self.entry_tolN.get())
+
+        print(tol_E, tol_N)
 
         common_points = []
 
@@ -272,24 +285,25 @@ class MainWindow:
             tkMessageBox.showerror("Error", ex)
 
         else:
-            print("SUCCESS")
+
             self.compare_result_lbl.config(text='SUCCESS')
 
             # display results to user
-            msg_header = "EASTING TOLERANCE = " + str(tol_E) + "\nNORTHING TOLERANCE = " + str(tol_N) +"\n\n"
+            # msg_header = "EASTING TOLERANCE = " + str(tol_E) + "\nNORTHING TOLERANCE = " + str(tol_N) +"\n\n"
 
             msg_body = ''
 
             for point in sorted(self.outliers_dict, key=lambda k: k):
                 msg_body += point + ': ' + self.outliers_dict[point] + '\n'
 
-            msg_complete = msg_header + msg_body
+            # msg_complete = msg_header + msg_body
+            msg_complete = msg_body
 
             top = Toplevel()
             top.title("POINTS THAT EXCEED TOLERANCE")
             top.geometry('400x600')
 
-            msg = Message(top, text=msg_header + msg_body)
+            msg = Message(top, text=msg_body)
             msg.pack()
 
     def get_fixed_file_path(self):
@@ -316,7 +330,7 @@ class MainWindow:
 def main():
     # Create GUI - see GSI Query
     root = Tk()
-    root.geometry("400x400")
+    root.geometry("400x450")
     root.title(' THE GIGOLO by Richard Walter 2020')
     MainWindow(root)
     root.mainloop()
