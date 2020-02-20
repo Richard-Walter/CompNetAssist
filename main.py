@@ -81,10 +81,11 @@ class FixedFile:
 
 
 class CoordinateFile:
-    re_pattern_easting = re.compile(r'\b28\d{4}\.\d{4}')
-    re_pattern_northing = re.compile(r'\b62\d{5}\.\d{4}')
+    re_pattern_easting = re.compile(r'\b2[789]\d{4}\.\d{4}')
+    re_pattern_northing = re.compile(r'\b6[123]\d{5}\.\d{4}')
     re_pattern_point_crd = re.compile(r'\b\S+\b')
     re_pattern_point_std = re.compile(r'"\S+"')
+    re_pattern_point_asc = re.compile(r'@#\S+')
 
     def __init__(self, coordinate_file_path):
 
@@ -100,9 +101,9 @@ class CoordinateFile:
             print(ex, type(ex))
 
         else:
+
             # remove first 12 lines which contain header text if it is a CRD file
             # remove the first 10 to check 'DESCRIPTION' exists in the header
-
             if coordinate_file_path[-3:] == 'CRD':
                 del self.file_contents[0: 10]
                 if 'DESCRIPTION' in self.file_contents[0]:
@@ -113,12 +114,25 @@ class CoordinateFile:
                 else:
                     raise Exception('CRD file Header should contain only 12 rows')
 
-                # build coordinate dictionary STD
+                # build coordinate dictionary
                 self.build_coordinate_dictionary('CRD')
 
-            else:
-                # build coordinate dictionary CRD
+            elif coordinate_file_path[-3:] == 'STD':
+
+                # build coordinate dictionary
                 self.build_coordinate_dictionary('STD')
+
+            # remove first 12 lines which contain header text if it is a CRD file
+            # remove the first 10 to check '@%Projection set' exists in the header
+            elif coordinate_file_path[-3:] == 'asc':
+                del self.file_contents[0: 3]
+                if '@%Projection set' in self.file_contents[0]:
+                    del self.file_contents[0]
+                # build coordinate dictionary
+                else:
+                    raise Exception('Unsupported file type')
+
+                self.build_coordinate_dictionary('ASC')
 
     def get_point_coordinates(self, point):
 
@@ -145,28 +159,22 @@ class CoordinateFile:
 
                     point_match = self.re_pattern_point_std.search(coordinate_contents_line)
 
-                point_coordinate_dict['Eastings'] = easting_match.group()
-                point_coordinate_dict['Northings'] = northing_match.group()
+                elif file_type == 'ASC':
+
+                    point_match = self.re_pattern_point_asc.search(coordinate_contents_line)
 
                 point_name = point_match.group()
-                point_name = point_name.replace('"', '')
+                point_name = point_name.replace('"', '')    # for *STD files
+                point_name = point_name.replace('@#', '')    # for *asc files
+
+                point_coordinate_dict['Eastings'] = easting_match.group()
+                point_coordinate_dict['Northings'] = northing_match.group()
 
                 self.coordinate_dictionary[point_name] = point_coordinate_dict
 
             except ValueError:
                 # probabaly a blank line
                 pass
-
-    # @staticmethod
-    # def get_point(coordinate_line):
-    #
-    #     point = ""
-    #     re_pattern_point = re.compile(r'\b\S+\b')
-    #     point_match = re_pattern_point.search(coordinate_line)
-    #
-    #     if point_match is not "":
-    #         point = point_match.group()
-    #     return point
 
 
 class MainWindow:
