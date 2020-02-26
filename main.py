@@ -7,11 +7,15 @@ This program assists in survey CompNet adjustments:  It can do the following:
 Written by Richard Walter 2020
 """
 
-import tkFileDialog
+# -*- coding: utf-8 -*-
 
+import tkFileDialog
+import logging.config
 from Tkinter import *
 import tkMessageBox
+from GSI import GSI
 
+logger = logging.getLogger('CompNet Assist')
 
 class FixedFile:
 
@@ -194,14 +198,13 @@ class MainWindow:
         self.update_btn = Button(master, text='(3) UPDATE FIXED FILE ', command=self.update_fixed_file)
         self.fixed_result_lbl = Label(master, text=' ')
         self.blank_lbl = Label(master, text='')
-        self.blank_lbl = Label(master, text='')
 
         self.update_fixed_file_lbl.pack()
         self.fixed_btn.pack()
         self.coord_btn.pack()
         self.update_btn.pack()
         self.fixed_result_lbl.pack()
-        self.blank_lbl.pack()
+        # self.blank_lbl.pack()
 
         # Compare CRD Files GUI
         self.compare_crd_files_lbl = Label(master, text='\nCOMPARE CRD FILES\n')
@@ -229,6 +232,23 @@ class MainWindow:
         self.crd_file_2_btn.pack()
         self.compare_crd_btn.pack()
         self.compare_result_lbl.pack()
+
+        # Strip all shots except control
+        self.strip_non_control_shots_lbl = Label(master, text='\nSTRIP ALL SHOTS EXCEPT CONTROL:\n')
+        self.strip_non_control_shots_btn = Button(master, text='Choose GSI File to strip',
+                                                  command=self.strip_non_control_shots)
+        self.strip_non_control_shots_lbl.pack()
+        self.strip_non_control_shots_btn.pack()
+
+    def strip_non_control_shots(self):
+
+        # let user choose GSI file
+        gsi_file_path = tkFileDialog.askopenfilename()
+        print(gsi_file_path)
+
+        old_gsi = GSI(logger)
+        old_gsi.format_gsi(gsi_file_path)
+        print(old_gsi.get_control_points())
 
     def update_fixed_file(self):
 
@@ -334,14 +354,36 @@ class MainWindow:
 
             tkMessageBox.showerror("Error", "No filepath no exists: " + str(file_path_number))
 
+def configure_logger():
+    logger.setLevel(logging.ERROR)
+    formatter = logging.Formatter('%(asctime)s:%(name)s:%(message)s')
+
+    # Writes debug messages to the log
+    file_handler = logging.FileHandler('CompNet Assist.log')
+    file_handler.setLevel(logging.ERROR)
+    file_handler.setFormatter(formatter)
+
+    # Display debug messages to the console
+    stream_handler = logging.StreamHandler()
+    stream_handler.setLevel(logging.ERROR)
+    stream_handler.setFormatter(formatter)
+
+    logger.addHandler(file_handler)
+    logger.addHandler(stream_handler)
+    logger.info('Started Application')
 
 def main():
+
+    # Setup logger
+    configure_logger()
+
     # Create GUI - see GSI Query
     root = Tk()
-    root.geometry("400x450")
-    root.title(' THE GIGOLO by Richard Walter 2020')
+    root.geometry("400x500")
+    root.title(' CompNet Assist - Richard Walter 2020')
     MainWindow(root)
     root.mainloop()
+    logger.info('Application Ended')
 
 
 if __name__ == '__main__':
