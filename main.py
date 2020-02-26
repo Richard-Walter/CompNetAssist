@@ -244,11 +244,15 @@ class MainWindow:
 
         # let user choose GSI file
         gsi_file_path = tkFileDialog.askopenfilename()
-        print(gsi_file_path)
 
-        old_gsi = GSI(logger)
-        old_gsi.format_gsi(gsi_file_path)
-        print(old_gsi.get_control_points())
+        try:
+            old_gsi = GSI(logger)
+            old_gsi.format_gsi(gsi_file_path)
+            old_gsi.create_control_only_gsi()
+
+        except Exception as ex:
+            # most likely no file choosen or incorrect GSI
+            print(ex, type(ex))
 
     def update_fixed_file(self):
 
